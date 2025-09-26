@@ -66,9 +66,18 @@ echo "B4F2F4334C1992E0:1122334455667788" >> 14000.hash
 ```
 > Crack
 ```
-# Full DES
+# Full DES Key Space
 hashcat.exe -m 14000 -a 3 -1 charsets/DES_full.hcchr --hex-charset 14000.hash ?1?1?1?1?1?1?1?1
 ```
-### Rainbow Tables
+### Password Shucking
+If the plaintext equivalent of the NTLMv1 password is known in online lookup databases, password shucking can be performed to recover the plaintext.
+
+- Only feasible for user account passwords
+
+URL: https://shuck.sh/get-shucking.php
+
 ```
+[+]  INPUT TOKEN                                    NT-HASH (PTH-READY)
+
+Moe::SEVENKINGDOMS:535549550D915078B4F2...              Password123
 ```
