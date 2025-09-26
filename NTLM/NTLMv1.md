@@ -37,6 +37,20 @@ impacket-getST DOMAIN/'MACHINE$':'PASSWORD' -impersonate "ADMIN" -spn "SERVICE/T
 nxc smb "TARGET" --use-kcache 
 ```
 
+#### Cleanup
+
+- The system we relay to (Ntlmrelayx target) has the ```msDs-AllowedToActOnBehalfOfOtherIdentity``` attribute modified to the created machine account. Ensure this is removed on engagements
+
+```powershell
+# Run in elevated PowerShell
+Get-ADComputer -Identity "DC01$" | ForEach-Object { Set-ADObject -Identity $_.DistinguishedName -Clear "msDS-AllowedToActOnBehalfOfOtherIdentity" }
+```
+- Ensure the created machine account is removed at the end of the engagement
+```powershell
+# Run in elevated PowerShell
+Remove-ADComputer -Identity "WSW01$"
+```
+
 ## Recovering NTLMv1 Credentials
 
 ### Password Cracking
