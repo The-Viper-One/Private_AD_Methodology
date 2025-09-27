@@ -8,14 +8,18 @@
 
 - At least two Domain Controllers in the target Domain
 - One domain controller configured with a LanMan Compatability setting at or less than '2' (Coerce Target)
-- The other Domain Controller with a LanMan Compatability setting at or less than '4' (Relay Target)(Requires verification. Lab results suggest a value of '5' still works for NTLM through LDAP?)
+- Target Domain Controller is not Windows Server 2025 (Default LDAP Signing and Binding)
+
+#### LDAP Signing and Channel Binding
+- LDAP Signing is enforced: Relay -> ```ldaps://```
+- LDAP Signing is not enforced but channel binding is: Relay -> ```ldap://``` (Impacket uses StartTLS)
+- **Note**: NTLMv1 does not support channel binding
 
 #### Optional Requirements (Depends on attack vector)
 
 #### MAQ -> RBCD -> Domain Administrator
 
 - MAQ Greater than 0
-- LDAP Channel Binding and Signing both not enforced
 - Account to impersonate not in "Protected Users" or "Sensitive and cant be delegated"
 
 #### Attack Chain
@@ -39,15 +43,16 @@ nxc smb "TARGET" --use-kcache
 
 #### Cleanup
 
-- The system we relay to (Ntlmrelayx target) has the ```msDs-AllowedToActOnBehalfOfOtherIdentity``` attribute modified to the created machine account. Ensure this is removed on engagements
+- The system we coerce from has the ```msDs-AllowedToActOnBehalfOfOtherIdentity``` attribute modified to the created machine account. Ensure this is removed on engagements.
+- Ensure the created machine account is removed at the end of the engagement.
 
 ```powershell
 # Run in elevated PowerShell
+
+# Clear msDS-AllowedToActOnBehalfOfOtherIdentity attribute
 Get-ADComputer -Identity "DC01$" | ForEach-Object { Set-ADObject -Identity $_.DistinguishedName -Clear "msDS-AllowedToActOnBehalfOfOtherIdentity" }
-```
-- Ensure the created machine account is removed at the end of the engagement
-```powershell
-# Run in elevated PowerShell
+
+# Remove Created Computer Account
 Remove-ADComputer -Identity "WSW01$"
 ```
 
