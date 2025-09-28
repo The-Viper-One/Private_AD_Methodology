@@ -19,7 +19,7 @@ ___
 - LDAP Signing is not enforced but channel binding is: Relay -> ```ldap://``` (Impacket uses StartTLS)
 - **Note**: NTLMv1 does not support channel binding
 
-#### Optional Requirements (Depends on attack vector)
+#### Optional Requirements (Depends on attack chain)
 
 #### MAQ -> RBCD -> Domain Administrator
 
