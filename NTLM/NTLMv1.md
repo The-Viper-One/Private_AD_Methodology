@@ -4,6 +4,8 @@
 
 ### LDAP
 
+Its not possible to relay SMB connections to LDAP(S) unless the Message Integrity Code (MIC) is removed. As NTLMv1 does not support the MIC it is therefor possible to relay NTLMv1 coerced from SMB to LDAP(S)
+
 ### Requirements
 
 - At least two Domain Controllers in the target Domain
