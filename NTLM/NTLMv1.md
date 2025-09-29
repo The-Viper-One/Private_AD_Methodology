@@ -68,6 +68,15 @@ Get-ADComputer -Identity "DC01$" | ForEach-Object { Set-ADObject -Identity $_.Di
 
 # Remove Created Computer Account (If used MAQ method)
 Remove-ADComputer -Identity "WSW01$"
+
+
+# Powerview.py
+
+# Remove msDS-AllowedToActOnBehalfOfOtherIdentity
+Set-ADObject -Identity DC01$ -Clear msDS-AllowedToActOnBehalfOfOtherIdentity 
+
+# Remove Created Computer Account (If used MAQ method)
+Remove-ADComputer -ComputerName "WS01$"
 ```
 
 ## Recovering NTLMv1 Credentials
